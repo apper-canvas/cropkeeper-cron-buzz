@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
 import MainFeature from '../components/MainFeature';
+import AddFarmModal from '../components/AddFarmModal';
 import getIcon from '../utils/iconUtils';
 
 function Home() {
@@ -18,6 +20,15 @@ function Home() {
     { id: 1, name: "Green Valley Farm", location: "North County", size: "24 acres", crops: 4, tasks: 6 },
     { id: 2, name: "Riverside Fields", location: "Eastern Plains", size: "16 acres", crops: 2, tasks: 3 },
   ]);
+  
+  const [isAddFarmModalOpen, setIsAddFarmModalOpen] = useState(false);
+  
+  const addFarm = (newFarm) => {
+    setFarms(prevFarms => [...prevFarms, newFarm]);
+  };
+  
+  const handleAddFarmClick = () => setIsAddFarmModalOpen(true);
+  const handleCloseModal = () => setIsAddFarmModalOpen(false);
 
   const tabItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboardIcon },
@@ -113,12 +124,14 @@ function Home() {
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  onClick={handleAddFarmClick}
                   className="border-2 border-dashed border-surface-300 dark:border-surface-700 rounded-xl flex flex-col items-center justify-center p-6 h-full min-h-[180px] cursor-pointer"
                 >
                   <div className="bg-surface-100 dark:bg-surface-700 rounded-full p-3 mb-3">
                     <SproutIcon className="h-6 w-6 text-primary" />
                   </div>
                   <p className="font-medium text-center">Add a new farm</p>
+                  <p className="text-sm text-surface-500 dark:text-surface-400 text-center mt-1">Click to create a new farm</p>
                 </motion.div>
               </div>
             </section>
@@ -166,6 +179,13 @@ function Home() {
           </div>
         </div>
       </footer>
+      
+      {/* Add Farm Modal */}
+      <AddFarmModal 
+        isOpen={isAddFarmModalOpen} 
+        onClose={handleCloseModal}
+        onAddFarm={addFarm}
+      />
     </div>
   );
 }
