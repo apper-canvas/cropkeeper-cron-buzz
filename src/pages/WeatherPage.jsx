@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
 import getIcon from '../utils/iconUtils';
 import { getFarms, getCurrentWeather, getForecast, getWeatherAlerts } from '../services/weatherService';
 
@@ -11,7 +10,6 @@ function WeatherPage() {
   const navigate = useNavigate();
   
   // Icons
-  const navigate = useNavigate();
   const LayoutDashboardIcon = getIcon('LayoutDashboard');
   const SproutIcon = getIcon('Sprout');
   const ListTodoIcon = getIcon('ListTodo');
@@ -146,9 +144,6 @@ function WeatherPage() {
               <p className="text-primary-light/80 mt-1">Simplify your farm management</p>
             </div>
             
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
           <motion.button
             onClick={() => navigate('/')}
             className="flex items-center bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg mb-4 text-sm font-medium"
@@ -159,13 +154,6 @@ function WeatherPage() {
             <ChevronLeftIcon className="w-4 h-4 mr-1" />
             Back to Dashboard
           </motion.button>
-          
-              className="btn bg-white text-primary hover:bg-surface-100 font-semibold self-start"
-              onClick={() => navigate('/')}
-            >
-              <ArrowLeftIcon className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </motion.button>
           </div>
         </div>
       </header>
