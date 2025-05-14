@@ -23,7 +23,7 @@ function Home() {
   const CloudSunIcon = getIcon('CloudSun');
   
   // Sample data for the farm cards
-  const [farms, setFarms] = useState([
+  const [farms, setFarms] = useState(() => JSON.parse(localStorage.getItem('farms')) || [
     { id: 1, name: "Green Valley Farm", location: "North County", size: "24 acres", crops: 4, tasks: 6 },
     { id: 2, name: "Riverside Fields", location: "Eastern Plains", size: "16 acres", crops: 2, tasks: 3 },
   ]);
@@ -31,7 +31,11 @@ function Home() {
   const [isAddFarmModalOpen, setIsAddFarmModalOpen] = useState(false);
   
   const addFarm = (newFarm) => {
-    setFarms(prevFarms => [...prevFarms, newFarm]);
+    const updatedFarms = [...farms, newFarm];
+    setFarms(updatedFarms);
+    // Save to localStorage for persistence
+    localStorage.setItem('farms', JSON.stringify(updatedFarms));
+    toast.success("Farm added successfully!");
   };
   
   const handleAddFarmClick = () => setIsAddFarmModalOpen(true);
