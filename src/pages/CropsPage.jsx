@@ -519,7 +519,6 @@ function CropsPage() {
                       {editingCropId ? 'Update Crop' : 'Save Crop'}
                     </button>
                   </div>
-                </form>
               </div>
             </motion.div>
           </div>
