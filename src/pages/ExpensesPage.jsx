@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { format, parseISO } from 'date-fns';
 import getIcon from '../utils/iconUtils';
 import ExpenseFormModal from '../components/ExpenseFormModal';
 
+  const navigate = useNavigate();
 function ExpensesPage() {
   // Icons
   const PlusIcon = getIcon('Plus');
@@ -47,6 +49,7 @@ function ExpensesPage() {
         farmId: farms.length > 0 ? farms[0].id : ''
       },
       {
+  const ChevronLeftIcon = getIcon('ChevronLeft');
         id: '3',
         date: '2023-06-05',
         amount: 420.75,
@@ -185,6 +188,17 @@ function ExpensesPage() {
   const handleDeleteExpense = () => {
     if (expenseToDelete) {
       setExpenses(prev => prev.filter(expense => expense.id !== expenseToDelete.id));
+          <motion.button
+            onClick={() => navigate('/')}
+            className="flex items-center bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg mb-4 text-sm font-medium"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            aria-label="Back to Dashboard"
+          >
+            <ChevronLeftIcon className="w-4 h-4 mr-1" />
+            Back to Dashboard
+          </motion.button>
+          
       toast.success('Expense deleted successfully!');
       setIsDeleteModalOpen(false);
       setExpenseToDelete(null);

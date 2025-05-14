@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import getIcon from '../utils/iconUtils';
@@ -10,6 +11,7 @@ function CropsPage() {
   const SproutIcon = getIcon('Sprout');
   const CalendarIcon = getIcon('Calendar');
   const MapPinIcon = getIcon('MapPin');
+  const navigate = useNavigate();
   const InfoIcon = getIcon('Info');
   const PlusIcon = getIcon('Plus');
   const XIcon = getIcon('X');
@@ -18,6 +20,7 @@ function CropsPage() {
   const EditIcon = getIcon('Edit');
   const TrashIcon = getIcon('Trash');
   const FilterIcon = getIcon('Filter');
+  const ChevronLeftIcon = getIcon('ChevronLeft');
   const SearchIcon = getIcon('Search');
   
   // State for crops
@@ -122,6 +125,17 @@ function CropsPage() {
     }
     
     // Reset form and state
+          <motion.button
+            onClick={() => navigate('/')}
+            className="flex items-center bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg mb-4 text-sm font-medium"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            aria-label="Back to Dashboard"
+          >
+            <ChevronLeftIcon className="w-4 h-4 mr-1" />
+            Back to Dashboard
+          </motion.button>
+          
     setFormData(initialFormState);
     setIsAddingCrop(false);
     setEditingCropId(null);
