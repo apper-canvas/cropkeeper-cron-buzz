@@ -188,17 +188,6 @@ function ExpensesPage() {
   const handleDeleteExpense = () => {
     if (expenseToDelete) {
       setExpenses(prev => prev.filter(expense => expense.id !== expenseToDelete.id));
-          <motion.button
-            onClick={() => navigate('/')}
-            className="flex items-center bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg mb-4 text-sm font-medium"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            aria-label="Back to Dashboard"
-          >
-            <ChevronLeftIcon className="w-4 h-4 mr-1" />
-            Back to Dashboard
-          </motion.button>
-          
       toast.success('Expense deleted successfully!');
       setIsDeleteModalOpen(false);
       setExpenseToDelete(null);
@@ -238,6 +227,17 @@ function ExpensesPage() {
           <p className="text-surface-600 dark:text-surface-400">
             Track and manage all your farm expenses
           </p>
+          <motion.button
+            onClick={() => navigate('/')}
+            className="flex items-center bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg mt-4 text-sm font-medium"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            aria-label="Back to Dashboard"
+          >
+            <ChevronLeftIcon className="w-4 h-4 mr-1" />
+            Back to Dashboard
+          </motion.button>
+          
         </header>
 
         {/* Filters Section */}
