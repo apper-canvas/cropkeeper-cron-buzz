@@ -200,10 +200,10 @@ function TasksPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-5">
+      <div className="grid grid-cols-1 gap-6">
         {filteredTasks.length === 0 ? (
-          <div className="card text-center py-12">
-            <p className="text-surface-500 dark:text-surface-400 font-medium">No tasks found. Create a new task to get started!</p>
+          <div className="card text-center py-16 border border-surface-200 dark:border-surface-700">
+            <p className="text-surface-500 dark:text-surface-400 text-lg font-medium">No tasks found. Create a new task to get started!</p>
           </div>
         ) : (
           filteredTasks.map(task => {
@@ -214,34 +214,42 @@ function TasksPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
-                className={`card border-l-4 hover:shadow-md transition-shadow ${task.completed ? 'border-l-green-500 bg-green-50/50 dark:bg-green-900/10' : 'border-l-primary'}`}
+                className={`card border-l-4 hover:shadow-lg transition-all duration-300 ${
+                  task.completed 
+                    ? 'border-l-green-500 bg-green-50/30 dark:bg-green-900/10' 
+                    : 'border-l-primary'
+                }`}
               >
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-5">
                   <div className="flex-1">
-                    <div className="flex items-start">
+                    <div className="flex items-start gap-3">
                       <button 
                         onClick={() => handleToggleCompletion(task.id)}
-                        className={`rounded-full mr-3 min-w-8 h-8 flex items-center justify-center border-2 shadow-sm ${
+                        className={`rounded-full min-w-8 h-8 flex items-center justify-center border-2 shadow-sm transition-colors ${
                           task.completed 
                             ? 'bg-green-500 border-green-500 text-white' 
-                            : 'border-surface-300 dark:border-surface-600'
+                            : 'border-surface-300 dark:border-surface-600 hover:border-primary dark:hover:border-primary-light'
                         }`}
                         aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
                       >
                         {task.completed && <CheckIcon className="h-4 w-4" />}
                       </button>
-                      <div className="flex-1">
-                        <h3 className={`text-lg font-semibold mb-2 ${task.completed ? 'line-through text-surface-500 dark:text-surface-400' : ''}`}>
+                      <div className="flex-1 pt-0.5">
+                        <h3 className={`text-lg font-semibold mb-2.5 ${task.completed ? 'line-through text-surface-500 dark:text-surface-400' : ''}`}>
                           {task.title}
                         </h3>
-                        <p className="text-surface-600 dark:text-surface-400 mb-3 leading-relaxed">{task.description}</p>
-                        <div className="flex flex-wrap items-center gap-2.5 text-sm">
-                          {farm && <span className="bg-primary/10 text-primary dark:bg-primary/20 px-2.5 py-1 rounded-md font-medium">{farm.name}</span>}
-                          <span className="flex items-center text-surface-600 dark:text-surface-300 font-medium whitespace-nowrap">
+                        <p className="text-surface-600 dark:text-surface-400 mb-4 leading-relaxed">{task.description}</p>
+                        <div className="flex flex-wrap items-center gap-3 text-sm">
+                          {farm && (
+                            <span className="bg-primary/10 text-primary dark:bg-primary/20 px-3 py-1.5 rounded-md font-medium">
+                              {farm.name}
+                            </span>
+                          )}
+                          <span className="flex items-center text-surface-600 dark:text-surface-400 font-medium whitespace-nowrap bg-surface-100 dark:bg-surface-700/50 px-3 py-1.5 rounded-md">
                             <ClockIcon className="h-4 w-4 mr-1" />
                             {new Date(task.dueDate).toLocaleDateString()}
                            </span>
-                          <span className={`px-2.5 py-1 rounded-md font-medium ${getPriorityClass(task.priority)}`}>
+                          <span className={`px-3 py-1.5 rounded-md font-medium ${getPriorityClass(task.priority)}`}>
                             {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
                           </span>
                         </div>
@@ -249,10 +257,10 @@ function TasksPage() {
                     </div>
                   </div>
                   
-                  <div className="flex space-x-3 mt-2 sm:mt-0 ml-11 sm:ml-0">
+                  <div className="flex gap-3 mt-3 sm:mt-0 ml-11 sm:ml-0">
                     <button
                       onClick={() => handleOpenEditModal(task)}
-                      className="btn py-1.5 px-3.5 bg-blue-500 hover:bg-blue-600 text-white"
+                      className="btn py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white transition-colors"
                       aria-label="Edit task"
                     >
                       <EditIcon className="h-4 w-4 mr-1" />
@@ -260,11 +268,11 @@ function TasksPage() {
                     </button>
                     <button
                       onClick={() => handleDeleteTask(task.id)}
-                      className="btn py-1.5 px-3.5 bg-red-500 hover:bg-red-600 text-white"
+                      className="btn py-2 px-3 bg-red-500 hover:bg-red-600 text-white transition-colors"
                       aria-label="Delete task"
                       title="Delete task"
                     >
-                      <TrashIcon className="h-4 w-4" />
+                      <TrashIcon className="h-4 w-4 mx-0.5" />
                     </button>
                   </div>
                 </div>
@@ -278,7 +286,7 @@ function TasksPage() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={handleOpenAddModal}
-        className="fixed right-6 bottom-20 rounded-full bg-primary hover:bg-primary-dark text-white p-4 shadow-xl flex items-center justify-center"
+        className="fixed right-6 bottom-20 rounded-full bg-primary hover:bg-primary-dark text-white p-4 shadow-xl flex items-center justify-center transition-colors"
         aria-label="Add new task"
       >
         <PlusIcon className="h-6 w-6" />

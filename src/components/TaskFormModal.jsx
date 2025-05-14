@@ -120,29 +120,32 @@ const TaskFormModal = ({ isOpen, onClose, onSubmit, task, farms }) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-60 overflow-y-auto">
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.25 }}
-            className="bg-white dark:bg-surface-800 rounded-xl shadow-lg w-full max-w-lg overflow-hidden"
+            className="bg-white dark:bg-surface-800 rounded-xl shadow-xl w-full max-w-lg overflow-hidden relative flex flex-col"
           >
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold flex items-center">
+            {/* Modal Header */}
+            <div className="flex justify-between items-center p-6 pb-2">
+              <h2 className="text-xl font-bold flex items-center text-surface-800 dark:text-surface-100">
                 <ListTodoIcon className="mr-2 h-5 w-5 text-primary" />
                 {task ? 'Edit Task' : 'Add New Task'}
               </h2>
               <button 
                 onClick={onClose}
-                className="p-1 rounded-full hover:bg-surface-200 dark:hover:bg-surface-700"
+                className="p-1.5 rounded-full hover:bg-surface-200 dark:hover:bg-surface-700 transition-colors"
                 aria-label="Close modal"
               >
                 <XIcon className="h-5 w-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4 max-h-[calc(90vh-120px)] overflow-y-auto px-6 pb-6">
+            {/* Modal Body */}
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+              <div className="space-y-5 p-6 pt-2 overflow-y-auto max-h-[calc(90vh-180px)] scrollbar-hide">
               <div>
                 <label htmlFor="title" className="label">Task Title*</label>
                 <input
@@ -237,24 +240,27 @@ const TaskFormModal = ({ isOpen, onClose, onSubmit, task, farms }) => {
                   {errors.form}
                 </div>
               )}
+              </div>
 
-              <div className="flex justify-end gap-3 pt-5 mt-3 border-t border-surface-200 dark:border-surface-700">
+              {/* Modal Footer - Always visible */}
+              <div className="flex justify-end gap-3 p-6 pt-4 mt-auto border-t border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="btn bg-surface-200 dark:bg-surface-700 text-surface-700 dark:text-surface-300 hover:bg-surface-300 dark:hover:bg-surface-600 px-5"
+                  className="btn bg-surface-200 dark:bg-surface-700 text-surface-700 dark:text-surface-300 hover:bg-surface-300 dark:hover:bg-surface-600 px-5 py-2.5"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="btn btn-primary px-5"
+                  className="btn btn-primary px-5 py-2.5"
                   >
                   {isSubmitting ? 'Saving...' : task ? 'Update Task' : 'Add Task'}
                 </button>
               </div>
             </form>
+
           </motion.div>
         </div>
       )}
