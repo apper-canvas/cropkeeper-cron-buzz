@@ -35,7 +35,6 @@ function CropsPage() {
 
   const { crops, isLoading, error, setCrops } = useGetCrops(filters);
   const { farms } = useGetFarms();
-  });
   
   // Filters
   const [selectedFarm, setSelectedFarm] = useState('all');
