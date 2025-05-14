@@ -120,8 +120,14 @@ function ExpensesPage() {
 
   // Open add/edit expense modal
   const openExpenseModal = (expense = null) => {
-  const saveExpense = async (expenseData) => {
     setIsExpenseModalOpen(true);
+    setCurrentExpense(expense);
+  };
+  
+  // Save expense - handles both create and update
+  const saveExpense = async (expenseData) => {
+    if (expenseData.id && expenses.some(e => e.id === expenseData.id)) {
+      // Update existing expense
       try {
         const { ApperClient } = window.ApperSDK;
         const apperClient = new ApperClient({
@@ -131,22 +137,21 @@ function ExpensesPage() {
         
         await apperClient.updateRecord("expense", { records: [{ ...expenseData, Id: expenseData.id }] });
         setExpenses(prev => prev.map(e => e.id === expenseData.id ? expenseData : e));
+        setIsExpenseModalOpen(false);
         toast.success('Expense updated successfully!');
       } catch (error) {
         toast.error("Failed to update expense: " + error.message);
       }
-
+    } else {
+      // Create new expense
       try {
         const result = await createExpense(expenseData);
         setExpenses(prev => [...prev, { ...expenseData, id: result.Id }]);
+        setIsExpenseModalOpen(false);
         toast.success('Expense added successfully!');
       } catch (error) {
         toast.error("Failed to add expense: " + error.message);
       }
-  const saveExpense = (expenseData) => {
-    if (expenseData.id && expenses.some(e => e.id === expenseData.id)) {
-      handleUpdateExpense(expenseData);
-      handleAddExpense(expenseData);
     }
   };
 
