@@ -126,7 +126,7 @@ const TaskFormModal = ({ isOpen, onClose, onSubmit, task, farms }) => {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.25 }}
-            className="bg-white dark:bg-surface-800 rounded-xl shadow-lg w-full max-w-lg p-6"
+            className="bg-white dark:bg-surface-800 rounded-xl shadow-lg w-full max-w-lg overflow-hidden"
           >
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold flex items-center">
@@ -142,7 +142,7 @@ const TaskFormModal = ({ isOpen, onClose, onSubmit, task, farms }) => {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pb-2">
+            <form onSubmit={handleSubmit} className="space-y-4 max-h-[calc(90vh-120px)] overflow-y-auto px-6 pb-6">
               <div>
                 <label htmlFor="title" className="label">Task Title*</label>
                 <input
@@ -238,7 +238,7 @@ const TaskFormModal = ({ isOpen, onClose, onSubmit, task, farms }) => {
                 </div>
               )}
 
-              <div className="flex justify-end gap-3 pt-4 mt-2 sticky bottom-0 bg-white dark:bg-surface-800">
+              <div className="flex justify-end gap-3 pt-5 mt-3 border-t border-surface-200 dark:border-surface-700">
                 <button
                   type="button"
                   onClick={onClose}
@@ -249,7 +249,7 @@ const TaskFormModal = ({ isOpen, onClose, onSubmit, task, farms }) => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="btn btn-primary"
+                  className="btn btn-primary px-5"
                   >
                   {isSubmitting ? 'Saving...' : task ? 'Update Task' : 'Add Task'}
                 </button>
