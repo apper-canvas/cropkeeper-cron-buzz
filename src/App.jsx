@@ -7,6 +7,7 @@ import getIcon from './utils/iconUtils';
 
 // Page imports
 import Home from './pages/Home';
+import CropsPage from './pages/CropsPage';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -46,6 +47,7 @@ function App() {
 
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/crops" element={<CropsPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
 

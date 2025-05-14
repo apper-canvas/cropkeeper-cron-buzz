@@ -1,12 +1,19 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
+import { useNavigate, useLocation } from 'react-router-dom';
 import MainFeature from '../components/MainFeature';
 import AddFarmModal from '../components/AddFarmModal';
 import getIcon from '../utils/iconUtils';
 
 function Home() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Determine active tab based on the last visited tab or default to dashboard
+  const [activeTab, setActiveTab] = useState(() => {
+    return localStorage.getItem('activeTab') || 'dashboard';
+  });
   
   // Icons
   const LayoutDashboardIcon = getIcon('LayoutDashboard');
@@ -31,12 +38,26 @@ function Home() {
   const handleCloseModal = () => setIsAddFarmModalOpen(false);
 
   const tabItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboardIcon },
-    { id: 'crops', label: 'Crops', icon: SproutIcon },
-    { id: 'tasks', label: 'Tasks', icon: ListTodoIcon },
-    { id: 'expenses', label: 'Expenses', icon: BanknoteIcon },
-    { id: 'weather', label: 'Weather', icon: CloudSunIcon },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboardIcon, path: '/' },
+    { id: 'crops', label: 'Crops', icon: SproutIcon, path: '/crops' },
+    { id: 'tasks', label: 'Tasks', icon: ListTodoIcon, path: '/tasks' },
+    { id: 'expenses', label: 'Expenses', icon: BanknoteIcon, path: '/expenses' },
+    { id: 'weather', label: 'Weather', icon: CloudSunIcon, path: '/weather' },
   ];
+
+  // Handle tab changes - either change the active tab or navigate to a different route
+  const handleTabChange = (tabId) => {
+    const targetTab = tabItems.find(tab => tab.id === tabId);
+    
+    if (targetTab) {
+      setActiveTab(tabId);
+      localStorage.setItem('activeTab', tabId);
+      
+      if (location.pathname !== targetTab.path) {
+        navigate(targetTab.path);
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-surface-50 dark:bg-surface-900 pb-16">
@@ -71,7 +92,7 @@ function Home() {
               {tabItems.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => setActiveTab(item.id)}
+                  onClick={() => handleTabChange(item.id)}
                   className={`flex items-center px-4 py-4 border-b-2 transition-all ${
                     activeTab === item.id
                       ? 'border-primary text-primary dark:text-primary-light font-medium'
@@ -140,34 +161,6 @@ function Home() {
           </div>
         )}
         
-        {/* Placeholder content for other tabs */}
-        {activeTab === 'crops' && (
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Crops Management</h2>
-            <p className="text-surface-600 dark:text-surface-400">Track all your crops and their growth stages here.</p>
-          </div>
-        )}
-        
-        {activeTab === 'tasks' && (
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Farm Tasks</h2>
-            <p className="text-surface-600 dark:text-surface-400">Manage your daily tasks and schedules.</p>
-          </div>
-        )}
-        
-        {activeTab === 'expenses' && (
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Expense Tracking</h2>
-            <p className="text-surface-600 dark:text-surface-400">Track and analyze all your farm expenses.</p>
-          </div>
-        )}
-        
-        {activeTab === 'weather' && (
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Weather Forecast</h2>
-            <p className="text-surface-600 dark:text-surface-400">Check the weather forecast for your farm locations.</p>
-          </div>
-        )}
       </main>
 
       {/* Footer */}
