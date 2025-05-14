@@ -168,18 +168,18 @@ function TasksPage() {
           <ListTodoIcon className="mr-2 h-6 w-6 text-primary" />
           Tasks Management
         </h1>
+        </h1>
         
         <motion.button
-          onClick={() => navigate('/')}
+          className="flex items-center bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg mb-4 text-sm font-medium"
           className="flex items-center bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg mb-4 text-sm font-medium"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           aria-label="Back to Dashboard"
         >
           <ChevronLeftIcon className="w-4 h-4 mr-1" />
-          Back to Dashboard
         </motion.button>
-        </h1>
+
         
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex items-center">
