@@ -183,7 +183,7 @@ const TaskFormModal = ({ isOpen, onClose, onSubmit, task, farms }) => {
                     className={`input ${errors.farmId ? 'border-red-500 dark:border-red-700' : ''}`}
                   >
                     {farms.map(farm => (
-                      <option key={farm.id} value={farm.id}>{farm.name}</option>
+                      <option key={farm.Id} value={farm.Id}>{farm.Name}</option>
                     ))}
                   </select>
                   {errors.farmId && <p className="text-red-500 text-sm mt-1">{errors.farmId}</p>}

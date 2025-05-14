@@ -4,9 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import getIcon from '../utils/iconUtils';
 import TaskFormModal from '../components/TaskFormModal';
+import { useGetFarms } from '../services/farmService';
+import { useGetTasks, createTask, updateTask, deleteTask } from '../services/taskService';
 
 function TasksPage() {
   const navigate = useNavigate();
+  
+  // Icons
   const ListTodoIcon = getIcon('ListTodo');
   const FilterIcon = getIcon('Filter');
   const CheckIcon = getIcon('Check');
@@ -14,42 +18,8 @@ function TasksPage() {
   const TrashIcon = getIcon('Trash');
   const EditIcon = getIcon('Edit');
   const PlusIcon = getIcon('Plus');
-
-  // Sample data for tasks and farms
-  const [farms, setFarms] = useState([
-    { id: 1, name: "Green Valley Farm", location: "North County", size: "24 acres" },
-    { id: 2, name: "Riverside Fields", location: "Eastern Plains", size: "16 acres" },
-  ]);
-
-  const [tasks, setTasks] = useState([
-    { 
-      id: 1, 
-      title: "Water tomato field", 
-      description: "Ensure the drip irrigation system is working properly", 
-      farmId: 1, 
-      dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Tomorrow
-      priority: "high",
-      completed: false
-    },
-    { 
-      id: 2, 
-      title: "Harvest corn", 
-      description: "Corn in the south field is ready for harvest", 
-      farmId: 1, 
-      dueDate: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0], // Day after tomorrow
-      priority: "medium",
-      completed: false
-    },
-    { 
-      id: 3, 
-      title: "Repair fence", 
-      description: "Eastern fence needs repair after the storm", 
-      farmId: 2, 
-      dueDate: new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
-      priority: "low",
-      completed: true
-    },
-  ]);
+  const LoaderIcon = getIcon('Loader');
+  const ChevronLeftIcon = getIcon('ChevronLeft');
 
   // Filter states
   const [selectedFarmId, setSelectedFarmId] = useState('all');
@@ -59,67 +29,85 @@ function TasksPage() {
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentTask, setCurrentTask] = useState(null);
+  
+  // Get farms and tasks from services
+  const { farms } = useGetFarms();
+  
+  const filters = {
+    farmId: selectedFarmId === 'all' ? null : selectedFarmId,
+    status: statusFilter
+  };
+  
+  const { tasks, isLoading, error, setTasks } = useGetTasks(filters);
 
-  const ChevronLeftIcon = getIcon('ChevronLeft');
-  // Apply filters
+  // Set filtered tasks based on API data
   useEffect(() => {
-    let result = [...tasks];
-    
-    // Apply farm filter
-    if (selectedFarmId !== 'all') {
-      result = result.filter(task => task.farmId === parseInt(selectedFarmId));
-    }
-    
-    // Apply status filter
-    if (statusFilter === 'completed') {
-      result = result.filter(task => task.completed);
-    } else if (statusFilter === 'pending') {
-      result = result.filter(task => !task.completed);
-    }
-    
-    // Sort by due date (closer dates first)
-    result.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-    
-    setFilteredTasks(result);
-  }, [tasks, selectedFarmId, statusFilter]);
+    setFilteredTasks(tasks);
+  }, [tasks]);
+  
+  // Go back to dashboard
+  const handleGoBack = () => {
+    navigate('/');
+  };
 
   // Create new task
-  const handleAddTask = (newTask) => {
-    const taskWithId = {
-      ...newTask,
-      id: tasks.length > 0 ? Math.max(...tasks.map(t => t.id)) + 1 : 1
-    };
-    setTasks([...tasks, taskWithId]);
-    toast.success("Task added successfully!");
+  const handleAddTask = async (newTask) => {
+    try {
+      const result = await createTask(newTask);
+      toast.success("Task added successfully!");
+      
+      // Update local tasks list
+      setTasks(prev => [...prev, {
+        id: result.Id,
+        title: result.title,
+        description: result.description,
+        farmId: result.farmId,
+        dueDate: result.dueDate,
+        priority: result.priority,
+        completed: result.completed
+      }]);
+    } catch (error) {
+      toast.error("Failed to add task: " + error.message);
+    }
   };
 
   // Update existing task
-  const handleUpdateTask = (updatedTask) => {
-    setTasks(tasks.map(task => task.id === updatedTask.id ? updatedTask : task));
-    toast.success("Task updated successfully!");
+  const handleUpdateTask = async (updatedTask) => {
+    try {
+      await updateTask(updatedTask);
+      setTasks(tasks.map(task => task.id === updatedTask.id ? updatedTask : task));
+      toast.success("Task updated successfully!");
+    } catch (error) {
+      toast.error("Failed to update task: " + error.message);
+    }
   };
 
   // Delete task
-  const handleDeleteTask = (taskId) => {
+  const handleDeleteTask = async (taskId) => {
     if (confirm("Are you sure you want to delete this task?")) {
-      setTasks(tasks.filter(task => task.id !== taskId));
-      toast.success("Task deleted successfully!");
+      try {
+        await deleteTask(taskId);
+        setTasks(tasks.filter(task => task.id !== taskId));
+        toast.success("Task deleted successfully!");
+      } catch (error) {
+        toast.error("Failed to delete task: " + error.message);
+      }
     }
   };
 
   // Toggle task completion status
-  const handleToggleCompletion = (taskId) => {
-    setTasks(tasks.map(task => {
-      if (task.id === taskId) {
-        const updatedTask = { ...task, completed: !task.completed };
-        return updatedTask;
-      }
-      return task;
-    }));
-    
+  const handleToggleCompletion = async (taskId) => {
     const task = tasks.find(t => t.id === taskId);
     if (task) {
-      toast.info(task.completed ? "Task marked as pending" : "Task marked as completed");
+      try {
+        const updatedTask = { ...task, completed: !task.completed };
+        await updateTask(updatedTask);
+        
+        setTasks(tasks.map(t => t.id === taskId ? updatedTask : t));
+        toast.info(task.completed ? "Task marked as pending" : "Task marked as completed");
+      } catch (error) {
+        toast.error("Failed to update task: " + error.message);
+      }
     }
   };
 
@@ -170,13 +158,14 @@ function TasksPage() {
         </h1>
         
         <motion.button
-          className="flex items-center bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg mb-4 text-sm font-medium"
-          className="flex items-center bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg mb-4 text-sm font-medium"
+            onClick={handleGoBack}
+            className="flex items-center bg-primary hover:bg-primary-dark text-white px-3 py-1.5 rounded-lg mb-4 text-sm font-medium"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           aria-label="Back to Dashboard"
         >
           <ChevronLeftIcon className="w-4 h-4 mr-1" />
+            Back to Dashboard
         </motion.button>
 
         
@@ -191,7 +180,7 @@ function TasksPage() {
             >
               <option value="all">All Farms</option>
               {farms.map(farm => (
-                <option key={farm.id} value={farm.id}>{farm.name}</option>
+                <option key={farm.Id} value={farm.Id}>{farm.Name}</option>
               ))}
             </select>
           </div>
@@ -214,13 +203,23 @@ function TasksPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        {filteredTasks.length === 0 ? (
+        {isLoading ? (
+          <div className="card text-center py-16 border border-surface-200 dark:border-surface-700 flex flex-col items-center justify-center">
+            <LoaderIcon className="animate-spin h-8 w-8 text-primary mb-4" />
+            <p className="text-surface-500 dark:text-surface-400 text-lg font-medium">Loading tasks...</p>
+          </div>
+        ) : error ? (
+          <div className="card text-center py-16 border border-surface-200 dark:border-surface-700">
+            <p className="text-red-500 text-lg font-medium mb-2">Error loading tasks</p>
+            <p className="text-surface-500 dark:text-surface-400">Please try refreshing the page</p>
+          </div>
+        ) : filteredTasks.length === 0 ? (
           <div className="card text-center py-16 border border-surface-200 dark:border-surface-700">
             <p className="text-surface-500 dark:text-surface-400 text-lg font-medium">No tasks found. Create a new task to get started!</p>
           </div>
         ) : (
           filteredTasks.map(task => {
-            const farm = farms.find(f => f.id === task.farmId);
+            const farm = farms.find(f => f.Id.toString() === task.farmId.toString());
             return (
               <motion.div 
           
@@ -254,9 +253,9 @@ function TasksPage() {
                         </h3>
                         <p className="text-surface-600 dark:text-surface-400 mb-4 leading-relaxed">{task.description}</p>
                         <div className="flex flex-wrap items-center gap-3 text-sm">
-                          {farm && (
+                          {task.farmName && (
                             <span className="bg-primary/10 text-primary dark:bg-primary/20 px-3 py-1.5 rounded-md font-medium">
-                              {farm.name}
+                              {task.farmName}
                             </span>
                           )}
                           <span className="flex items-center text-surface-600 dark:text-surface-400 font-medium whitespace-nowrap bg-surface-100 dark:bg-surface-700/50 px-3 py-1.5 rounded-md">

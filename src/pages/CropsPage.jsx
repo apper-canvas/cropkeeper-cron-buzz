@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import getIcon from '../utils/iconUtils';
+import { useGetFarms } from '../services/farmService';
+import { useGetCrops, createCrop, updateCrop } from '../services/cropService';
 
 function CropsPage() {
   const HomeIcon = getIcon('Home');
@@ -22,25 +24,17 @@ function CropsPage() {
   const FilterIcon = getIcon('Filter');
   const ChevronLeftIcon = getIcon('ChevronLeft');
   const SearchIcon = getIcon('Search');
+  const LoaderIcon = getIcon('Loader');
   
   // State for crops
-  const [crops, setCrops] = useState(() => {
-    const savedCrops = localStorage.getItem('crops');
-    return savedCrops ? JSON.parse(savedCrops) : [
-      { id: 1, name: "Corn", variety: "Sweet Corn", farmId: 1, farmName: "Green Valley Farm", location: "Field A", plantingDate: "2023-04-15", harvestDate: "2023-08-20", status: "growing" },
-      { id: 2, name: "Tomatoes", variety: "Roma", farmId: 1, farmName: "Green Valley Farm", location: "Greenhouse 1", plantingDate: "2023-05-01", harvestDate: "2023-07-15", status: "harvested" },
-      { id: 3, name: "Wheat", variety: "Hard Red", farmId: 2, farmName: "Riverside Fields", location: "North Field", plantingDate: "2023-03-10", harvestDate: "2023-07-30", status: "growing" },
-      { id: 4, name: "Soybeans", variety: "Round-up Ready", farmId: 2, farmName: "Riverside Fields", location: "East Field", plantingDate: "2023-05-20", harvestDate: "2023-09-15", status: "planted" }
-    ];
-  });
-  
-  // Get farms
-  const [farms, setFarms] = useState(() => {
-    const savedFarms = localStorage.getItem('farms');
-    return savedFarms ? JSON.parse(savedFarms) : [
-      { id: 1, name: "Green Valley Farm", location: "North County", size: "24 acres" },
-      { id: 2, name: "Riverside Fields", location: "Eastern Plains", size: "16 acres" },
-    ];
+  const filters = {
+    farmId: selectedFarm === 'all' ? null : selectedFarm,
+    status: statusFilter === 'all' ? null : statusFilter,
+    searchQuery: searchQuery
+  };
+
+  const { crops, isLoading, error, setCrops } = useGetCrops(filters);
+  const { farms } = useGetFarms();
   });
   
   // Filters
@@ -64,12 +58,6 @@ function CropsPage() {
   
   const [formData, setFormData] = useState(initialFormState);
   const [formErrors, setFormErrors] = useState({});
-  
-  // Effect to save crops to localStorage
-  useEffect(() => {
-    localStorage.setItem('crops', JSON.stringify(crops));
-  }, [crops]);
-  
   // Handler for input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -77,7 +65,7 @@ function CropsPage() {
     
     // Update farmName if farmId changes
     if (name === 'farmId' && value) {
-      const selectedFarm = farms.find(farm => farm.id === parseInt(value));
+      const selectedFarm = farms.find(farm => farm.Id === parseInt(value));
       if (selectedFarm) {
         setFormData(prev => ({ ...prev, farmName: selectedFarm.name }));
       }
@@ -103,29 +91,36 @@ function CropsPage() {
   };
   
   // Handler for form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!validateForm()) return;
     
-    if (editingCropId) {
-      // Update existing crop
-      setCrops(crops.map(crop => 
-        crop.id === editingCropId ? { ...formData, id: editingCropId } : crop
-      ));
-      toast.success("Crop updated successfully!");
-    } else {
-      // Add new crop
-      const newCrop = {
-        ...formData,
-        id: Date.now()
-      };
-      setCrops([...crops, newCrop]);
-      toast.success("New crop added successfully!");
+    try {
+      if (editingCropId) {
+        // Update existing crop
+        await updateCrop({
+          Id: editingCropId,
+          Name: formData.name,
+          variety: formData.variety,
+          farmId: parseInt(formData.farmId),
+          location: formData.location,
+          plantingDate: formData.plantingDate,
+          harvestDate: formData.harvestDate,
+          status: formData.status
+        });
+        toast.success("Crop updated successfully!");
+      } else {
+        // Add new crop
+        await createCrop({
+          Name: formData.name,
+          ...formData
+        });
+        toast.success("New crop added successfully!");
+      }
+    } catch (error) {
+      toast.error("Failed to save crop: " + error.message);
     }
-    
-    // Reset form and state
-          <motion.button
             onClick={() => navigate('/')}
             className="flex items-center bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg mb-4 text-sm font-medium"
             whileHover={{ scale: 1.05 }}
@@ -142,17 +137,39 @@ function CropsPage() {
   };
   
   // Handler for edit crop
-  const handleEditCrop = (crop) => {
-    setFormData(crop);
-    setEditingCropId(crop.id);
+  const handleEditCrop = (cropData) => {
+    setFormData({
+      name: cropData.Name,
+      variety: cropData.variety || '',
+      farmId: cropData.farmId,
+      location: cropData.location,
+      plantingDate: cropData.plantingDate,
+      harvestDate: cropData.harvestDate,
+      status: cropData.status
+    });
+    setEditingCropId(cropData.Id);
     setIsAddingCrop(true);
   };
   
   // Handler for delete crop
-  const handleDeleteCrop = (id) => {
+  const handleDeleteCrop = async (id) => {
     if (window.confirm("Are you sure you want to delete this crop?")) {
-      setCrops(crops.filter(crop => crop.id !== id));
-      toast.success("Crop deleted successfully!");
+      try {
+        const { ApperClient } = window.ApperSDK;
+        const apperClient = new ApperClient({
+          apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+          apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+        });
+        
+        await apperClient.deleteRecord("crop", { RecordIds: [id] });
+        
+        // Update the local state to remove the deleted crop
+        setCrops(crops.filter(crop => crop.Id !== id));
+        toast.success("Crop deleted successfully!");
+      } catch (error) {
+        console.error("Error deleting crop:", error);
+        toast.error("Failed to delete crop: " + error.message);
+      }
     }
   };
   
@@ -164,23 +181,6 @@ function CropsPage() {
     setFormErrors({});
   };
   
-  // Filter crops
-  const filteredCrops = crops.filter(crop => {
-    // Filter by farm
-    if (selectedFarm !== 'all' && crop.farmId !== parseInt(selectedFarm)) return false;
-    
-    // Filter by status
-    if (statusFilter !== 'all' && crop.status !== statusFilter) return false;
-    
-    // Filter by search query
-    if (searchQuery && !crop.name.toLowerCase().includes(searchQuery.toLowerCase()) && 
-        !crop.variety.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
-    }
-    
-    return true;
-  });
-  
   // Get status badge style
   const getStatusBadge = (status) => {
     const statusStyles = {
@@ -188,7 +188,7 @@ function CropsPage() {
       growing: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
       harvested: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
     };
-    
+
     return `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStyles[status] || ""}`;
   };
 
@@ -225,7 +225,7 @@ function CropsPage() {
                 >
                   <option value="all">All Farms</option>
                   {farms.map(farm => (
-                    <option key={farm.id} value={farm.id}>{farm.name}</option>
+                    <option key={farm.Id} value={farm.Id}>{farm.Name}</option>
                   ))}
                 </select>
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -281,13 +281,24 @@ function CropsPage() {
           
           {/* Crops Table */}
           <div className="bg-white dark:bg-surface-800 shadow-card rounded-xl overflow-hidden">
-            <div className="p-4">
-              {filteredCrops.length === 0 ? (
+            <div className="p-4 min-h-[400px]">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <LoaderIcon className="animate-spin h-8 w-8 text-primary" />
+                  <span className="ml-2 text-surface-600 dark:text-surface-400">Loading crops...</span>
+                </div>
+              ) : error ? (
+                <div className="text-center py-12">
+                  <div className="text-red-500 mb-2">Failed to load crops</div>
+                  <p className="text-surface-500 dark:text-surface-400">
+                    Please try refreshing the page or check your connection.
+                  </p>
+                </div>
+              ) : crops.length === 0 ? (
                 <div className="text-center py-12">
                   <SeedlingIcon className="mx-auto h-12 w-12 text-surface-400 dark:text-surface-600 mb-3" />
                   <h3 className="text-lg font-medium text-surface-700 dark:text-surface-300 mb-1">No crops found</h3>
                   <p className="text-surface-500 dark:text-surface-400">
-                    {searchQuery ? "Try adjusting your search or filters" : 
                      (selectedFarm !== 'all' || statusFilter !== 'all') ? 
                      "Try changing your filter settings" : 
                      "Start by adding your first crop"}
@@ -295,9 +306,9 @@ function CropsPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {filteredCrops.map(crop => (
+                  {crops.map(crop => (
                     <motion.div
-                      key={crop.id}
+                      key={crop.Id}
                       whileHover={{ y: -3 }}
                       className="bg-surface-50 dark:bg-surface-800 rounded-lg border border-surface-200 dark:border-surface-700 overflow-hidden shadow-sm hover:shadow-card transition-all duration-200"
                     >
@@ -342,7 +353,7 @@ function CropsPage() {
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDeleteCrop(crop.id)}
+                          onClick={() => handleDeleteCrop(crop.Id)}
                           className="flex-1 flex items-center justify-center py-2.5 text-sm font-medium text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
                         >
                           <TrashIcon className="h-4 w-4 mr-1.5" />
@@ -354,7 +365,7 @@ function CropsPage() {
                 </div>
               )}
             </div>
-            {filteredCrops.length > 0 && (
+            {crops.length > 0 && (
               <div className="p-4 border-t border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50 text-sm text-surface-600 dark:text-surface-400">
                 Showing {filteredCrops.length} crop{filteredCrops.length !== 1 ? 's' : ''}
                 {selectedFarm !== 'all' && ` for ${farms.find(f => f.id === parseInt(selectedFarm))?.name || 'selected farm'}`}
@@ -431,7 +442,7 @@ function CropsPage() {
                       >
                         <option value="">Select a farm</option>
                         {farms.map(farm => (
-                          <option key={farm.id} value={farm.id}>{farm.name}</option>
+                          <option key={farm.Id} value={farm.Id}>{farm.Name}</option>
                         ))}
                       </select>
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">

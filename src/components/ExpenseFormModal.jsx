@@ -19,7 +19,7 @@ function ExpenseFormModal({ isOpen, onClose, onSave, expense = null, farms }) {
     amount: '',
     category: '',
     description: '',
-    farmId: farms.length > 0 ? farms[0].id : '',
+    farmId: farms.length > 0 ? farms[0].Id : '',
   });
 
   // Validation state
@@ -45,7 +45,7 @@ function ExpenseFormModal({ isOpen, onClose, onSave, expense = null, farms }) {
         category: '',
         description: '',
         farmId: farms.length > 0 ? farms[0].id : '',
-      });
+        farmId: farms.length > 0 ? farms[0].Id : '',
     }
     
     // Reset errors when opening modal
@@ -213,7 +213,7 @@ function ExpenseFormModal({ isOpen, onClose, onSave, expense = null, farms }) {
                   >
                     <option value="">Select a farm</option>
                     {farms.map(farm => (
-                      <option key={farm.id} value={farm.id}>{farm.name}</option>
+                      <option key={farm.Id} value={farm.Id}>{farm.Name}</option>
                     ))}
                   </select>
                   {errors.farmId && <p className="text-red-500 text-xs mt-1">{errors.farmId}</p>}

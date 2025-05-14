@@ -5,8 +5,9 @@ import { toast } from 'react-toastify';
 import { format, parseISO } from 'date-fns';
 import getIcon from '../utils/iconUtils';
 import ExpenseFormModal from '../components/ExpenseFormModal';
+import { useGetFarms } from '../services/farmService';
+import { useGetExpenses, createExpense, deleteExpense } from '../services/expenseService';
 
-  const navigate = useNavigate();
 function ExpensesPage() {
   // Icons
   const PlusIcon = getIcon('Plus');
@@ -22,43 +23,19 @@ function ExpensesPage() {
   const RefreshCwIcon = getIcon('RefreshCw');
   const ChevronLeftIcon = getIcon('ChevronLeft');
   const CalendarIcon = getIcon('Calendar');
+  const LoaderIcon = getIcon('Loader');
 
-  // State for farms
-  const [farms, setFarms] = useState(() => {
-    const savedFarms = localStorage.getItem('farms');
-    return savedFarms ? JSON.parse(savedFarms) : [];
-  });
-
-  // State for expenses
-  const [expenses, setExpenses] = useState(() => {
-    const savedExpenses = localStorage.getItem('expenses');
-    return savedExpenses ? JSON.parse(savedExpenses) : [
-      {
-        id: '1',
-        date: '2023-05-15',
-        amount: 250.00,
-        category: 'Seeds',
-        description: 'Spring corn seeds',
-        farmId: farms.length > 0 ? farms[0].id : ''
-      },
-      {
-        id: '2',
-        date: '2023-05-20',
-        amount: 175.50,
-        category: 'Fertilizer',
-        description: 'Organic fertilizer for vegetable plots',
-        farmId: farms.length > 0 ? farms[0].id : ''
-      },
-      {
-        id: '3',
-        date: '2023-06-05',
-        amount: 420.75,
-        category: 'Equipment',
-        description: 'Irrigation system repairs',
-        farmId: farms.length > 0 && farms.length > 1 ? farms[1].id : farms.length > 0 ? farms[0].id : ''
-      }
-    ];
-  });
+  const navigate = useNavigate();
+  
+  // Get farms data
+  const { farms } = useGetFarms();
+  
+  // Track if component is mounted
+  const [isMounted, setIsMounted] = useState(true);
+  
+  useEffect(() => {
+    return () => setIsMounted(false);
+  }, []);
 
   // Filter state
   const [filters, setFilters] = useState({
@@ -73,25 +50,20 @@ function ExpensesPage() {
     key: 'date',
     direction: 'desc',
   });
+  
+  // Get expenses with filters
+  const { expenses, isLoading, error, setExpenses } = useGetExpenses({
+    ...filters, 
+    sortConfig
+  });
 
   // Modal state
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [currentExpense, setCurrentExpense] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [expenseToDelete, setExpenseToDelete] = useState(null);
-
-  // Save expenses to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem('expenses', JSON.stringify(expenses));
-  }, [expenses]);
-
-  // Handle filter changes
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
-  };
-
-  // Clear filters
+  
+  // Filter and sort handlers
   const clearFilters = () => {
     setFilters({
       farm: '',
@@ -101,7 +73,11 @@ function ExpensesPage() {
     });
   };
 
-  // Sort expenses
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({ ...prev, [name]: value }));
+  };
+  
   const requestSort = (key) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -109,102 +85,67 @@ function ExpensesPage() {
     }
     setSortConfig({ key, direction });
   };
-
-  // Filter and sort expenses
-  const filteredAndSortedExpenses = expenses
-    .filter(expense => {
-      // Farm filter
-      if (filters.farm && expense.farmId !== filters.farm) return false;
-      
-      // Date range filter
-      if (filters.startDate && expense.date < filters.startDate) return false;
-      if (filters.endDate && expense.date > filters.endDate) return false;
-      
-      // Search term filter (case insensitive)
-      if (filters.searchTerm) {
-        const searchLower = filters.searchTerm.toLowerCase();
-        const matchesSearch = 
-          expense.description.toLowerCase().includes(searchLower) ||
-          expense.category.toLowerCase().includes(searchLower);
-        if (!matchesSearch) return false;
-      }
-      
-      return true;
-    })
-    .sort((a, b) => {
-      // Handle sorting
-      if (sortConfig.key === 'amount') {
-        return sortConfig.direction === 'asc' 
-          ? a.amount - b.amount 
-          : b.amount - a.amount;
-      } else if (sortConfig.key === 'date') {
-        return sortConfig.direction === 'asc' 
-          ? a.date.localeCompare(b.date)
-          : b.date.localeCompare(a.date);
-      } else {
-        return sortConfig.direction === 'asc'
-          ? String(a[sortConfig.key]).localeCompare(String(b[sortConfig.key]))
-          : String(b[sortConfig.key]).localeCompare(String(a[sortConfig.key]));
-      }
-    });
-
+  
   // Calculate statistics for the filtered expenses
-  const totalAmount = filteredAndSortedExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const totalAmount = expenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
   
   // Group expenses by category
-  const expensesByCategory = filteredAndSortedExpenses.reduce((acc, expense) => {
-    acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+  const expensesByCategory = expenses.reduce((acc, expense) => {
+    acc[expense.category] = (acc[expense.category] || 0) + parseFloat(expense.amount);
     return acc;
   }, {});
-
+  
   // Sort categories by amount
   const sortedCategories = Object.entries(expensesByCategory)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5); // Top 5 categories
-
-  // Get farm name by id
-  const getFarmName = (farmId) => {
-    const farm = farms.find(farm => farm.id.toString() === farmId.toString());
-    return farm ? farm.name : 'Unknown Farm';
-  };
-
-  // Add new expense
-  const handleAddExpense = (newExpense) => {
-    setExpenses(prev => [...prev, newExpense]);
-    toast.success('Expense added successfully!');
-  };
-
-  // Update expense
-  const handleUpdateExpense = (updatedExpense) => {
-    setExpenses(prev => 
-      prev.map(expense => 
-        expense.id === updatedExpense.id ? updatedExpense : expense
-      )
-    );
-    toast.success('Expense updated successfully!');
-  };
-
-  // Delete expense
-  const handleDeleteExpense = () => {
-    if (expenseToDelete) {
-      setExpenses(prev => prev.filter(expense => expense.id !== expenseToDelete.id));
-      toast.success('Expense deleted successfully!');
+  
+  // Handlers for expense operations
+  const handleDeleteExpense = async () => {
+    if (!expenseToDelete) return;
+    
+    try {
+      await deleteExpense(expenseToDelete.id);
+      if (isMounted) {
+        setExpenses(prev => prev.filter(expense => expense.id !== expenseToDelete.id));
+        toast.success('Expense deleted successfully!');
+        setIsDeleteModalOpen(false);
+        setExpenseToDelete(null);
+      }
+    } catch (error) {
+      toast.error("Failed to delete expense: " + error.message);
       setIsDeleteModalOpen(false);
-      setExpenseToDelete(null);
     }
   };
 
   // Open add/edit expense modal
   const openExpenseModal = (expense = null) => {
-    setCurrentExpense(expense);
+  const saveExpense = async (expenseData) => {
     setIsExpenseModalOpen(true);
-  };
+      try {
+        const { ApperClient } = window.ApperSDK;
+        const apperClient = new ApperClient({
+          apperProjectId: import.meta.env.VITE_APPER_PROJECT_ID,
+          apperPublicKey: import.meta.env.VITE_APPER_PUBLIC_KEY
+        });
+        
+        await apperClient.updateRecord("expense", { records: [{ ...expenseData, Id: expenseData.id }] });
+        setExpenses(prev => prev.map(e => e.id === expenseData.id ? expenseData : e));
+        toast.success('Expense updated successfully!');
+      } catch (error) {
+        toast.error("Failed to update expense: " + error.message);
+      }
 
-  // Save expense (add or update)
+      try {
+        const result = await createExpense(expenseData);
+        setExpenses(prev => [...prev, { ...expenseData, id: result.Id }]);
+        toast.success('Expense added successfully!');
+      } catch (error) {
+        toast.error("Failed to add expense: " + error.message);
+      }
   const saveExpense = (expenseData) => {
     if (expenseData.id && expenses.some(e => e.id === expenseData.id)) {
       handleUpdateExpense(expenseData);
-    } else {
       handleAddExpense(expenseData);
     }
   };
@@ -267,7 +208,7 @@ function ExpensesPage() {
               >
                 <option value="">All Farms</option>
                 {farms.map(farm => (
-                  <option key={farm.id} value={farm.id}>{farm.name}</option>
+                  <option key={farm.Id} value={farm.Id}>{farm.Name}</option>
                 ))}
               </select>
             </div>
@@ -346,7 +287,7 @@ function ExpensesPage() {
           </div>
 
           <div className="lg:col-span-2 bg-white dark:bg-surface-800 rounded-xl shadow-card p-4">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-semibold flex items-center">
                 <BanknoteIcon className="h-5 w-5 mr-2 text-primary" />
                 Expenses
@@ -362,7 +303,24 @@ function ExpensesPage() {
               </motion.button>
             </div>
 
-            {filteredAndSortedExpenses.length > 0 ? (
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <LoaderIcon className="animate-spin h-8 w-8 text-primary" />
+                <span className="ml-2 text-surface-600 dark:text-surface-400">
+                  Loading expenses...
+                </span>
+              </div>
+            ) : error ? (
+              <div className="text-center py-10">
+                <div className="text-red-500 mb-2">Failed to load expenses</div>
+                <p className="text-surface-500 dark:text-surface-400">
+                  Please try refreshing the page or check your connection.
+                </p>
+                <button onClick={() => window.location.reload()} className="mt-4 btn btn-primary">
+                  Retry
+                </button>
+              </div>
+            ) : expenses.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-full divide-y divide-surface-200 dark:divide-surface-700">
                   <thead>
@@ -397,7 +355,7 @@ function ExpensesPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white dark:bg-surface-800 divide-y divide-surface-200 dark:divide-surface-700">
-                    {filteredAndSortedExpenses.map((expense) => (
+                    {expenses.map((expense) => (
                       <tr key={expense.id} className="hover:bg-surface-50 dark:hover:bg-surface-700/50">
                         <td className="px-3 py-4 whitespace-nowrap">{format(parseISO(expense.date), 'MMM dd, yyyy')}</td>
                         <td className="px-3 py-4 whitespace-nowrap">
@@ -406,7 +364,7 @@ function ExpensesPage() {
                           </span>
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap font-medium">${expense.amount.toFixed(2)}</td>
-                        <td className="px-3 py-4 whitespace-nowrap">{getFarmName(expense.farmId)}</td>
+                        <td className="px-3 py-4 whitespace-nowrap">{expense.farmName}</td>
                         <td className="px-3 py-4">{expense.description}</td>
                         <td className="px-3 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                           <button
@@ -449,7 +407,7 @@ function ExpensesPage() {
         onSave={saveExpense}
         expense={currentExpense}
         farms={farms}
-      />
+                  />
 
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && (
