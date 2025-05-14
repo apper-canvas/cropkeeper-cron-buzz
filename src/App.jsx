@@ -11,6 +11,7 @@ import CropsPage from './pages/CropsPage';
 import TasksPage from './pages/TasksPage';
 import ExpensesPage from './pages/ExpensesPage';
 import NotFound from './pages/NotFound';
+import WeatherPage from './pages/WeatherPage';
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -52,6 +53,7 @@ function App() {
         <Route path="/crops" element={<CropsPage />} />
         <Route path="/tasks" element={<TasksPage />} />
         <Route path="/expenses" element={<ExpensesPage />} />
+        <Route path="/weather" element={<WeatherPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
 
