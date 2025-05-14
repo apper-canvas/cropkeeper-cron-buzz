@@ -168,7 +168,6 @@ function TasksPage() {
           <ListTodoIcon className="mr-2 h-6 w-6 text-primary" />
           Tasks Management
         </h1>
-        </h1>
         
         <motion.button
           className="flex items-center bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg mb-4 text-sm font-medium"
