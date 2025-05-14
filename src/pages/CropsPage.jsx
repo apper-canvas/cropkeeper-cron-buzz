@@ -120,15 +120,6 @@ function CropsPage() {
     } catch (error) {
       toast.error("Failed to save crop: " + error.message);
     }
-            onClick={() => navigate('/')}
-            className="flex items-center bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg mb-4 text-sm font-medium"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            aria-label="Back to Dashboard"
-          >
-            <ChevronLeftIcon className="w-4 h-4 mr-1" />
-            Back to Dashboard
-          </motion.button>
           
     setFormData(initialFormState);
     setIsAddingCrop(false);
@@ -198,6 +189,16 @@ function CropsPage() {
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center">
             <Link to="/" className="text-white/80 hover:text-white mr-3">
+              <motion.button
+                onClick={() => navigate('/')}
+                className="flex items-center bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg mb-4 text-sm font-medium"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                aria-label="Back to Dashboard"
+              >
+                <ChevronLeftIcon className="w-4 h-4 mr-1" />
+                Back to Dashboard
+              </motion.button>
               <HomeIcon className="h-5 w-5" />
             </Link>
             <h1 className="text-2xl md:text-3xl font-bold flex items-center">
@@ -298,9 +299,9 @@ function CropsPage() {
                   <SeedlingIcon className="mx-auto h-12 w-12 text-surface-400 dark:text-surface-600 mb-3" />
                   <h3 className="text-lg font-medium text-surface-700 dark:text-surface-300 mb-1">No crops found</h3>
                   <p className="text-surface-500 dark:text-surface-400">
-                     (selectedFarm !== 'all' || statusFilter !== 'all') ? 
-                     "Try changing your filter settings" : 
-                     "Start by adding your first crop"}
+                    {(selectedFarm !== 'all' || statusFilter !== 'all') ? 
+                    "Try changing your filter settings" : 
+                    "Start by adding your first crop"}
                   </p>
                 </div>
               ) : (
@@ -366,7 +367,7 @@ function CropsPage() {
             </div>
             {crops.length > 0 && (
               <div className="p-4 border-t border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50 text-sm text-surface-600 dark:text-surface-400">
-                Showing {filteredCrops.length} crop{filteredCrops.length !== 1 ? 's' : ''}
+                Showing {crops.length} crop{crops.length !== 1 ? 's' : ''}
                 {selectedFarm !== 'all' && ` for ${farms.find(f => f.id === parseInt(selectedFarm))?.name || 'selected farm'}`}
                 {statusFilter !== 'all' && ` with status "${statusFilter}"`}
               </div>
