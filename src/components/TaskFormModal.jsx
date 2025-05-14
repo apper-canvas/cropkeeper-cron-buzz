@@ -120,12 +120,12 @@ const TaskFormModal = ({ isOpen, onClose, onSubmit, task, farms }) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 overflow-y-auto">
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.25 }}
             className="bg-white dark:bg-surface-800 rounded-xl shadow-lg w-full max-w-lg p-6"
           >
             <div className="flex justify-between items-center mb-4">
@@ -142,7 +142,7 @@ const TaskFormModal = ({ isOpen, onClose, onSubmit, task, farms }) => {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pb-2">
               <div>
                 <label htmlFor="title" className="label">Task Title*</label>
                 <input
@@ -164,7 +164,7 @@ const TaskFormModal = ({ isOpen, onClose, onSubmit, task, farms }) => {
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  className="input min-h-24"
+                  className="input min-h-[6rem]"
                   placeholder="Enter task description"
                 />
               </div>
@@ -217,7 +217,7 @@ const TaskFormModal = ({ isOpen, onClose, onSubmit, task, farms }) => {
                   </select>
                 </div>
 
-                <div className="flex items-center pt-6">
+                <div className="flex items-center pt-5">
                   <input
                     type="checkbox"
                     id="completed"
@@ -238,11 +238,11 @@ const TaskFormModal = ({ isOpen, onClose, onSubmit, task, farms }) => {
                 </div>
               )}
 
-              <div className="flex justify-end space-x-3 pt-2">
+              <div className="flex justify-end gap-3 pt-4 mt-2 sticky bottom-0 bg-white dark:bg-surface-800">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="btn bg-surface-200 dark:bg-surface-700 text-surface-700 dark:text-surface-300 hover:bg-surface-300 dark:hover:bg-surface-600"
+                  className="btn bg-surface-200 dark:bg-surface-700 text-surface-700 dark:text-surface-300 hover:bg-surface-300 dark:hover:bg-surface-600 px-5"
                 >
                   Cancel
                 </button>
@@ -250,7 +250,7 @@ const TaskFormModal = ({ isOpen, onClose, onSubmit, task, farms }) => {
                   type="submit"
                   disabled={isSubmitting}
                   className="btn btn-primary"
-                >
+                  >
                   {isSubmitting ? 'Saving...' : task ? 'Update Task' : 'Add Task'}
                 </button>
               </div>

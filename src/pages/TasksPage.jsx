@@ -161,7 +161,7 @@ function TasksPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-8">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
         <h1 className="text-2xl font-bold flex items-center mb-4 md:mb-0">
           <ListTodoIcon className="mr-2 h-6 w-6 text-primary" />
           Tasks Management
@@ -169,12 +169,12 @@ function TasksPage() {
         
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex items-center">
-            <label htmlFor="farm-filter" className="mr-2 text-sm whitespace-nowrap">Farm:</label>
+            <label htmlFor="farm-filter" className="mr-2 text-sm font-medium whitespace-nowrap">Farm:</label>
             <select 
               id="farm-filter"
               value={selectedFarmId}
               onChange={(e) => setSelectedFarmId(e.target.value)}
-              className="input py-1 px-3"
+              className="input py-2 px-3 text-sm"
             >
               <option value="all">All Farms</option>
               {farms.map(farm => (
@@ -187,15 +187,15 @@ function TasksPage() {
             <button
               onClick={() => setStatusFilter('all')}
               className={`btn py-1 px-3 ${statusFilter === 'all' ? 'btn-primary' : 'bg-surface-200 dark:bg-surface-700 text-surface-700 dark:text-surface-300'}`}
-            >All</button>
+            >All Tasks</button>
             <button
               onClick={() => setStatusFilter('pending')}
               className={`btn py-1 px-3 ${statusFilter === 'pending' ? 'btn-primary' : 'bg-surface-200 dark:bg-surface-700 text-surface-700 dark:text-surface-300'}`}
-            >Pending</button>
+            >To Do</button>
             <button
               onClick={() => setStatusFilter('completed')}
               className={`btn py-1 px-3 ${statusFilter === 'completed' ? 'btn-primary' : 'bg-surface-200 dark:bg-surface-700 text-surface-700 dark:text-surface-300'}`}
-            >Completed</button>
+            >Done</button>
           </div>
         </div>
       </div>
@@ -203,7 +203,7 @@ function TasksPage() {
       <div className="grid grid-cols-1 gap-4">
         {filteredTasks.length === 0 ? (
           <div className="card text-center py-12">
-            <p className="text-surface-500 dark:text-surface-400">No tasks found. Create a new task to get started!</p>
+            <p className="text-surface-500 dark:text-surface-400 font-medium">No tasks found. Create a new task to get started!</p>
           </div>
         ) : (
           filteredTasks.map(task => {
@@ -214,14 +214,14 @@ function TasksPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
-                className={`card border-l-4 ${task.completed ? 'border-l-green-500 opacity-70' : 'border-l-primary'}`}
+                className={`card border-l-4 ${task.completed ? 'border-l-green-500 bg-green-50/50 dark:bg-green-900/10' : 'border-l-primary'}`}
               >
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
                   <div className="flex-1">
                     <div className="flex items-start">
                       <button 
                         onClick={() => handleToggleCompletion(task.id)}
-                        className={`rounded-full mr-3 min-w-8 h-8 flex items-center justify-center border-2 ${
+                        className={`rounded-full mr-3 min-w-8 h-8 flex items-center justify-center border-2 shadow-sm ${
                           task.completed 
                             ? 'bg-green-500 border-green-500 text-white' 
                             : 'border-surface-300 dark:border-surface-600'
@@ -231,16 +231,16 @@ function TasksPage() {
                         {task.completed && <CheckIcon className="h-4 w-4" />}
                       </button>
                       <div className="flex-1">
-                        <h3 className={`text-lg font-semibold ${task.completed ? 'line-through text-surface-500 dark:text-surface-400' : ''}`}>
+                        <h3 className={`text-lg font-semibold mb-1 ${task.completed ? 'line-through text-surface-500 dark:text-surface-400' : ''}`}>
                           {task.title}
                         </h3>
                         <p className="text-surface-600 dark:text-surface-400 mb-2">{task.description}</p>
                         <div className="flex flex-wrap items-center gap-2 text-sm">
-                          {farm && <span className="bg-primary/10 text-primary dark:bg-primary/20 px-2 py-1 rounded">{farm.name}</span>}
-                          <span className="flex items-center text-surface-600 dark:text-surface-300">
+                          {farm && <span className="bg-primary/10 text-primary dark:bg-primary/20 px-2 py-1 rounded-md font-medium">{farm.name}</span>}
+                          <span className="flex items-center text-surface-600 dark:text-surface-300 font-medium">
                             <ClockIcon className="h-4 w-4 mr-1" />
-                            Due: {new Date(task.dueDate).toLocaleDateString()}
-                          </span>
+                            {new Date(task.dueDate).toLocaleDateString()}
+                           </span>
                           <span className={`px-2 py-1 rounded ${getPriorityClass(task.priority)}`}>
                             {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
                           </span>
@@ -249,18 +249,20 @@ function TasksPage() {
                     </div>
                   </div>
                   
-                  <div className="flex space-x-2 mt-4 sm:mt-0">
+                  <div className="flex space-x-3 mt-4 sm:mt-0 ml-11 sm:ml-0">
                     <button
                       onClick={() => handleOpenEditModal(task)}
-                      className="btn py-1 bg-blue-500 hover:bg-blue-600 text-white"
+                      className="btn py-1.5 px-3 bg-blue-500 hover:bg-blue-600 text-white"
                       aria-label="Edit task"
                     >
-                      <EditIcon className="h-4 w-4" />
+                      <EditIcon className="h-4 w-4 mr-1" />
+                      <span>Edit</span>
                     </button>
                     <button
                       onClick={() => handleDeleteTask(task.id)}
-                      className="btn py-1 bg-red-500 hover:bg-red-600 text-white"
+                      className="btn py-1.5 px-3 bg-red-500 hover:bg-red-600 text-white"
                       aria-label="Delete task"
+                      title="Delete task"
                     >
                       <TrashIcon className="h-4 w-4" />
                     </button>
@@ -276,7 +278,7 @@ function TasksPage() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={handleOpenAddModal}
-        className="fixed right-6 bottom-20 rounded-full bg-primary hover:bg-primary-dark text-white p-4 shadow-lg flex items-center justify-center"
+        className="fixed right-6 bottom-20 rounded-full bg-primary hover:bg-primary-dark text-white p-4 shadow-xl flex items-center justify-center"
         aria-label="Add new task"
       >
         <PlusIcon className="h-6 w-6" />
