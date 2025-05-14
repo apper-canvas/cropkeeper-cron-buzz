@@ -83,7 +83,7 @@ const AddFarmModal = ({ isOpen, onClose, onAddFarm }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (validateForm()) {
       // Create new farm with random ID and initial crops/tasks count
       const newFarm = {
@@ -96,7 +96,9 @@ const AddFarmModal = ({ isOpen, onClose, onAddFarm }) => {
         cropTypes: formData.cropTypes.split(',').map(crop => crop.trim()).filter(Boolean)
       };
       
-      onAddFarm(newFarm);
+      if (typeof onAddFarm === 'function') {
+        onAddFarm(newFarm);
+      }
       toast.success(`Farm "${formData.name}" has been added successfully!`);
       onClose();
     } else {

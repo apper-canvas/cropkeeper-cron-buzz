@@ -31,13 +31,19 @@ function Home() {
   const [isAddFarmModalOpen, setIsAddFarmModalOpen] = useState(false);
   
   const addFarm = (newFarm) => {
-    const updatedFarms = [...farms, newFarm];
+    // Generate a unique ID if not provided
+    const farmWithId = {
+      ...newFarm,
+      id: newFarm.id || Date.now(),
+      crops: newFarm.crops || 0,
+      tasks: newFarm.tasks || 0
+    };
+    
+    const updatedFarms = [...farms, farmWithId];
     setFarms(updatedFarms);
     // Save to localStorage for persistence
     localStorage.setItem('farms', JSON.stringify(updatedFarms));
-    toast.success("Farm added successfully!");
   };
-  
   const handleAddFarmClick = () => setIsAddFarmModalOpen(true);
   const handleCloseModal = () => setIsAddFarmModalOpen(false);
 
