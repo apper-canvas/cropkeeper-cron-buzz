@@ -267,59 +267,84 @@ function CropsPage() {
           
           {/* Crops Table */}
           <div className="bg-white dark:bg-surface-800 shadow-card rounded-xl overflow-hidden">
-            {filteredCrops.length === 0 ? (
-              <div className="text-center py-12">
-                <SeedlingIcon className="mx-auto h-12 w-12 text-surface-400 dark:text-surface-600 mb-3" />
-                <h3 className="text-lg font-medium text-surface-700 dark:text-surface-300 mb-1">No crops found</h3>
-                <p className="text-surface-500 dark:text-surface-400">
-                  {searchQuery ? "Try adjusting your search or filters" : 
-                   (selectedFarm !== 'all' || statusFilter !== 'all') ? 
-                   "Try changing your filter settings" : 
-                   "Start by adding your first crop"}
-                </p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-surface-200 dark:divide-surface-700">
-                  <thead className="bg-surface-100 dark:bg-surface-800">
-                    <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-surface-500 dark:text-surface-400 uppercase tracking-wider">Crop</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-surface-500 dark:text-surface-400 uppercase tracking-wider hidden md:table-cell">Farm</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-surface-500 dark:text-surface-400 uppercase tracking-wider hidden lg:table-cell">Location</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-surface-500 dark:text-surface-400 uppercase tracking-wider hidden xl:table-cell">Planted</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-surface-500 dark:text-surface-400 uppercase tracking-wider">Status</th>
-                      <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-surface-500 dark:text-surface-400 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-surface-800 divide-y divide-surface-200 dark:divide-surface-700">
-                    {filteredCrops.map(crop => (
-                      <tr key={crop.id} className="hover:bg-surface-50 dark:hover:bg-surface-700/50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-surface-900 dark:text-surface-100">{crop.name}</div>
-                          {crop.variety && <div className="text-xs text-surface-500 dark:text-surface-400">{crop.variety}</div>}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-surface-700 dark:text-surface-300 hidden md:table-cell">{crop.farmName}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-surface-700 dark:text-surface-300 hidden lg:table-cell">{crop.location}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-surface-700 dark:text-surface-300 hidden xl:table-cell">{crop.plantingDate}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+            <div className="p-4">
+              {filteredCrops.length === 0 ? (
+                <div className="text-center py-12">
+                  <SeedlingIcon className="mx-auto h-12 w-12 text-surface-400 dark:text-surface-600 mb-3" />
+                  <h3 className="text-lg font-medium text-surface-700 dark:text-surface-300 mb-1">No crops found</h3>
+                  <p className="text-surface-500 dark:text-surface-400">
+                    {searchQuery ? "Try adjusting your search or filters" : 
+                     (selectedFarm !== 'all' || statusFilter !== 'all') ? 
+                     "Try changing your filter settings" : 
+                     "Start by adding your first crop"}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {filteredCrops.map(crop => (
+                    <motion.div
+                      key={crop.id}
+                      whileHover={{ y: -3 }}
+                      className="bg-surface-50 dark:bg-surface-800 rounded-lg border border-surface-200 dark:border-surface-700 overflow-hidden shadow-sm hover:shadow-card transition-all duration-200"
+                    >
+                      <div className="p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h3 className="font-medium text-surface-900 dark:text-surface-100">{crop.name}</h3>
+                            {crop.variety && <p className="text-sm text-surface-500 dark:text-surface-400">{crop.variety}</p>}
+                          </div>
                           <span className={getStatusBadge(crop.status)}>
                             {crop.status.charAt(0).toUpperCase() + crop.status.slice(1)}
                           </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex justify-end space-x-3">
-                            <button onClick={() => handleEditCrop(crop)} className="text-primary hover:text-primary-dark" aria-label="Edit crop">
-                              <EditIcon className="h-4 w-4" />
-                            </button>
-                            <button onClick={() => handleDeleteCrop(crop.id)} className="text-red-600 hover:text-red-800 dark:text-red-500 dark:hover:text-red-400" aria-label="Delete crop">
-                              <TrashIcon className="h-4 w-4" />
-                            </button>
+                        </div>
+
+                        <div className="space-y-2 mt-3">
+                          <div className="flex items-center text-sm">
+                            <SeedlingIcon className="h-4 w-4 text-primary mr-2" />
+                            <span className="text-surface-700 dark:text-surface-300">{crop.farmName}</span>
                           </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                          
+                          <div className="flex items-center text-sm">
+                            <MapPinIcon className="h-4 w-4 text-secondary mr-2" />
+                            <span className="text-surface-700 dark:text-surface-300">{crop.location}</span>
+                          </div>
+                          
+                          <div className="flex items-center text-sm">
+                            <CalendarIcon className="h-4 w-4 text-accent mr-2" />
+                            <span className="text-surface-700 dark:text-surface-300">
+                              Planted: {crop.plantingDate}
+                              {crop.harvestDate && ` • Harvest: ${crop.harvestDate}`}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex border-t border-surface-200 dark:border-surface-700 divide-x divide-surface-200 dark:divide-surface-700">
+                        <button
+                          onClick={() => handleEditCrop(crop)}
+                          className="flex-1 flex items-center justify-center py-2.5 text-sm font-medium text-primary hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"
+                        >
+                          <EditIcon className="h-4 w-4 mr-1.5" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCrop(crop.id)}
+                          className="flex-1 flex items-center justify-center py-2.5 text-sm font-medium text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+                        >
+                          <TrashIcon className="h-4 w-4 mr-1.5" />
+                          Delete
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+            {filteredCrops.length > 0 && (
+              <div className="p-4 border-t border-surface-200 dark:border-surface-700 bg-surface-50 dark:bg-surface-800/50 text-sm text-surface-600 dark:text-surface-400">
+                Showing {filteredCrops.length} crop{filteredCrops.length !== 1 ? 's' : ''}
+                {selectedFarm !== 'all' && ` for ${farms.find(f => f.id === parseInt(selectedFarm))?.name || 'selected farm'}`}
+                {statusFilter !== 'all' && ` with status "${statusFilter}"`}
               </div>
             )}
           </div>
@@ -334,7 +359,7 @@ function CropsPage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-white dark:bg-surface-800 rounded-xl shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-white dark:bg-surface-800 rounded-xl shadow-lg max-w-2xl w-full max-h-[90vh] flex flex-col"
             >
               <div className="p-6">
                 <div className="flex justify-between items-center mb-4">
@@ -347,7 +372,7 @@ function CropsPage() {
                 </div>
                 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
                       <label htmlFor="name" className="label">Crop Name</label>
                       <div className="relative">
@@ -471,22 +496,26 @@ function CropsPage() {
                         <MoveIcon className="h-4 w-4 text-surface-500" />
                       </div>
                     </div>
-                  </div>
+                  </div>                  
+                </form>
+              </div>
+              
+              {/* Sticky Footer with Action Buttons */}
+              <div className="mt-auto border-t border-surface-200 dark:border-surface-700 p-4 bg-surface-50 dark:bg-surface-800 sticky bottom-0">
+                <div className="flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={handleCancelForm}
+                    className="btn bg-surface-200 dark:bg-surface-700 text-surface-700 dark:text-surface-300 hover:bg-surface-300 dark:hover:bg-surface-600"
+                  >
+                    Cancel
+                  </button>
                   
-                  <div className="flex justify-end space-x-3 pt-2">
-                    <button
-                      type="button"
-                      onClick={handleCancelForm}
-                      className="btn bg-surface-200 dark:bg-surface-700 text-surface-700 dark:text-surface-300 hover:bg-surface-300 dark:hover:bg-surface-600"
-                    >
-                      Cancel
-                    </button>
-                    
-                    <button
-                      type="submit"
-                      className="btn btn-primary"
-                    >
-                      <CheckIcon className="mr-1.5 h-4 w-4" />
+                  <button
+                    onClick={handleSubmit}
+                    className="btn btn-primary"
+                  >
+                    <CheckIcon className="mr-1.5 h-4 w-4" />
                       {editingCropId ? 'Update Crop' : 'Save Crop'}
                     </button>
                   </div>
