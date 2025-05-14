@@ -20,6 +20,7 @@ function ExpensesPage() {
   const ChevronDownIcon = getIcon('ChevronDown');
   const PieChartIcon = getIcon('PieChart');
   const RefreshCwIcon = getIcon('RefreshCw');
+  const ChevronLeftIcon = getIcon('ChevronLeft');
   const CalendarIcon = getIcon('Calendar');
 
   // State for farms
@@ -49,7 +50,6 @@ function ExpensesPage() {
         farmId: farms.length > 0 ? farms[0].id : ''
       },
       {
-  const ChevronLeftIcon = getIcon('ChevronLeft');
         id: '3',
         date: '2023-06-05',
         amount: 420.75,
