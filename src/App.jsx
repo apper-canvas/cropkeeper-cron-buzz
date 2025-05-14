@@ -9,6 +9,7 @@ import getIcon from './utils/iconUtils';
 import Home from './pages/Home';
 import CropsPage from './pages/CropsPage';
 import TasksPage from './pages/TasksPage';
+import ExpensesPage from './pages/ExpensesPage';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -50,6 +51,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/crops" element={<CropsPage />} />
         <Route path="/tasks" element={<TasksPage />} />
+        <Route path="/expenses" element={<ExpensesPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
 
